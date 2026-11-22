@@ -547,7 +547,6 @@ export function hostConversation(lookup: HostServiceLookup | null | undefined): 
   return conversation ?? null
 }
 
-
 /** The reader's own keyboard shortcuts. */
 export function hostShortcuts(lookup: HostServiceLookup | null | undefined): HostShortcutsService | null {
   const shortcuts = lookup?.get('shortcuts') as HostShortcutsService | undefined

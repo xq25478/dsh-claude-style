@@ -1,0 +1,67 @@
+/* One press ends the turn in flight (features/chat-stop/): the host keeps its
+   own stop in the send seat only while the draft is empty, so a turn sent with
+   text in the box has no stop to press. This one stands beside the model
+   picker in the send button's own shape, so the row reads as one control that
+   changes what it does. */
+
+body[data-dsh-claude-style] .dsh-claude-stop {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground, #faf9f5);
+  cursor: pointer;
+  transition:
+    background var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard),
+    opacity var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard);
+}
+
+/* The seat's own state: the control shows exactly while the session runs, and
+   stands out of the row the moment the turn ends (chat-stop.ts). */
+body[data-dsh-claude-style] .dsh-claude-stop:not(.is-out) {
+  display: inline-flex;
+}
+
+/* One stop on screen: while the host's own stop stands in the send seat, this
+   one stands down (features/composer marks the card). */
+body[data-dsh-claude-style] [data-dsh-claude-host-stop] .dsh-claude-stop {
+  display: none;
+}
+
+body[data-dsh-claude-style] .dsh-claude-stop:not(.is-out):hover {
+  background: var(--dsw-alias-button-primary-hover);
+}
+
+body[data-dsh-claude-style] .dsh-claude-stop:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
+}
+
+body[data-dsh-claude-style] .dsh-claude-stop:active {
+  transform: scale(0.94);
+}
+
+body[data-dsh-claude-style] .dsh-claude-stop.is-stopping {
+  opacity: 0.55;
+  cursor: default;
+}
+
+body[data-dsh-claude-style] .dsh-claude-stop.is-failed {
+  background: var(--dsw-alias-bg-layer-3);
+  color: var(--dsw-alias-label-primary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-stop > svg {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-dsh-claude-style] .dsh-claude-stop {
+    transition: none;
+  }
+}

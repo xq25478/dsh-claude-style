@@ -234,6 +234,8 @@ export interface HostServiceLookup {
 /** The `conversation` service: the composer input of one session's context. */
 export interface HostConversationService {
   input: { for(ctx: HostServiceLookup): HostConversationInput }
+  /** Cancel the scoped session's in-flight turn, keeping what its queue already holds; the host's own stop, the one its double-Esc command reaches. */
+  cancel?(): Promise<void>
 }
 
 /** One session's composer input: its draft, writing it back, and the actions a composer control presses. */

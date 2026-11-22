@@ -50,6 +50,7 @@ export interface Handles {
   chatFiles: FeatureHandle
   messageActions: FeatureHandle
   chatSend: ChatSendHandle
+  chatStop: FeatureHandle
   caret: FeatureHandle
   viewTabs: ViewTabsHandle
   headerVisibility: FeatureHandle

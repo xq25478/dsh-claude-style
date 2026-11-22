@@ -8,6 +8,8 @@
  * host can play, and every POST is recorded. No process is started, so the
  * spec hears no system sound.
  */
+import { installHostServiceOverride } from '../../fixtures/host-services.mjs'
+
 export async function setup(t, { status, list }) {
   const posts = []
   await t.page.route('**/dsh-claude-style/sound', async (route) => {
@@ -20,6 +22,7 @@ export async function setup(t, { status, list }) {
     await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' })
   })
 
+  await installHostServiceOverride(t.page)
   await t.page.evaluate(({ initialStatus, initialList }) => {
     window.__dispose()
     const channels = { list: new Set(), status: new Set() }
@@ -37,21 +40,7 @@ export async function setup(t, { status, list }) {
       refresh: () => Promise.resolve(),
     }
     const services = { uiSession, 'uiSession.sessionStatus': sessionStatus, sessions }
-    const originalGet = window.__ctxOriginalGet ?? window.__ctx.get.bind(window.__ctx)
-    window.__ctxOriginalGet = originalGet
-    window.__ctx.get = (name) => Object.hasOwn(services, name) ? services[name] : originalGet(name)
-    window.__ctx.inject = (_dependencies, callback) => {
-      const disposers = []
-      callback({
-        get: window.__ctx.get,
-        effect: (effect) => {
-          const dispose = effect()
-          if (typeof dispose === 'function') disposers.push(dispose)
-          return dispose
-        },
-      })
-      return { dispose: () => { for (const dispose of disposers.splice(0).reverse()) dispose() } }
-    }
+    window.__overrideHostServices(services)
     window.__soundHost = {
       read: () => ({ status: [...statusNow], list: listNow }),
       setStatus(next) {

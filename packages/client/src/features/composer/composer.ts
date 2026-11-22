@@ -1,4 +1,4 @@
-import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, MOBILE_PORTRAIT_ATTR, PART_ATTR, STAMPED_PART_ATTR, TRANSCRIPT_ATTR } from '../../constants'
+import { COMPOSER_ATTR, COMPOSER_HIDDEN_ATTR, HOME_LAYOUT_STUDIO, HOST_STOP_ATTR, MOBILE_PORTRAIT_ATTR, PART_ATTR, STAMPED_PART_ATTR, TRANSCRIPT_ATTR } from '../../constants'
 import { COMPOSER_ATTACHMENT_RAIL_SELECTOR, COMPOSER_CARD_SELECTOR, COMPOSER_FILE_INPUT_SELECTOR, COMPOSER_INPUT_SELECTOR, COMPOSER_VARIANT_ATTRIBUTE, CONVERSATION_VIEW_CONTEXT, CONVERSATION_VIEW_STATS, CONVERSATION_VIEW_TRAJECTORY, MOBILE_PORTRAIT_SELECTOR, PERMISSION_TRIGGER_SELECTOR, PHASE_ATTRIBUTE, SIDEBAR_CHAT_SELECTOR } from '@dsh-claude-style/contracts/dom'
 import { subscribeMutations } from '@dsh-claude-style/engine/bus'
 import { requestFrame } from '@dsh-claude-style/engine/frame'
@@ -268,6 +268,11 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
         const hidden = button !== standing
         if (hidden !== button.hasAttribute(HIDDEN_ATTR)) button.toggleAttribute(HIDDEN_ATTR, hidden)
       }
+      // The host's stop stands in the submit seat, so the skin's own stop stands
+      // down (features/chat-stop/): one turn offers one stop, and the reader's
+      // stop keeps the place Claude's own send button gives it.
+      const hostStops = standing !== null && standing.getAttribute(CONTROL_ATTR) === 'stop'
+      if (hostStops !== card.hasAttribute(HOST_STOP_ATTR)) card.toggleAttribute(HOST_STOP_ATTR, hostStops)
     }
     for (const card of cards) {
       // The fallback keeps a host that renders the slot outside a card marked.

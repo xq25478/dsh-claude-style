@@ -96,7 +96,7 @@ export function install(ctx: HostContext, ui: FeatureUi<typeof manifest>) {
    * second, and a row arriving or leaving moves the column's own count, which
    * is part of the shape.
    */
-  // 按行：两项都在行离开运行集合时随 release/收尾删除，行脱离文档即失去条目。
+  // Per row: both leave with the row (release, and the teardown's sweep).
   const tailVerdicts = new Map<HTMLElement, { shape: number, tail: boolean, at: number }>()
   const foreignVerdicts = new Map<HTMLElement, { shape: number, foreign: boolean, at: number }>()
   /** How long a reading stands when the structure around its row did not move. */

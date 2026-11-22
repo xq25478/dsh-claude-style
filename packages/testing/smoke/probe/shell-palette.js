@@ -175,7 +175,14 @@
             var props = node.props || {}
             if (typeof props.className === 'string' && /(^| )dsh-claude-motion-card( |$)/.test(props.className)) {
               var kids = [].concat(props.children || [])
-              var sample = kids[0] || {}
+              // A card names its answer over its sample, so the sample is found
+              // by its own class rather than by standing first.
+              var sample = null
+              for (var ki = 0; ki < kids.length; ki += 1) {
+                var kidProps = (kids[ki] || {}).props || {}
+                if (/(^| )dsh-claude-motion-sample( |$)/.test(kidProps.className || '')) sample = kids[ki]
+              }
+              if (sample === null) return
               var sampleProps = sample.props || {}
               // The two wordings, read through the tree: the sample's children
               // arrive nested (the module passes the mapped array as one child,
@@ -198,9 +205,10 @@
                 label: props['aria-label'],
                 active: props['data-active'] === '',
                 pressed: props['aria-pressed'],
-                // The card's only content is its sample: the choice carries no
-                // text of its own, and the sample is the words taking turns.
-                sample: kids.length === 1 && /(^| )dsh-claude-motion-sample( |$)/.test(sampleProps.className || ''),
+                // The card's content is its answer's name over the sample, and
+                // the sample is the words taking turns.
+                named: kids.length === 2,
+                sample: true,
                 words: words,
                 bands: bands,
                 sampleHidden: sampleProps['aria-hidden'] === 'true',
@@ -265,6 +273,58 @@
           }
           return out
         })()
+        // The rows whose answers differ only in motion carry no switch of their
+        // own: the two cards are the answers, each naming itself over its sample
+        // so the two samples can be told apart. A row of cards that hangs off a
+        // switch above it greys out and takes no input while that switch is off.
+        // Read off the rendered page as a plain tree, so no class of the page is
+        // named here beyond the row's own marker.
+        var readRow = function (key) {
+          var out = null
+          walk(renderSettingsTab('motion'), function (node) {
+            var props = node.props || {}
+            if (props.key !== key) return
+            var aside = probe.settingsAside(node)
+            out = {
+              name: aside === null ? null : aside.props['aria-label'],
+              switch: null,
+              labels: [],
+              disabled: props['data-disabled'] === '',
+              cards: [],
+            }
+            if (aside !== null) {
+              walk(aside.props.children, function (child) {
+                var childProps = child.props || {}
+                if (childProps.role !== 'switch') return
+                out.switch = { checked: childProps['aria-checked'], disabled: childProps.disabled === true }
+              })
+            }
+            // A card that names its answer holds the name as its first child and
+            // the sample after it, so the tree alone tells a naming card apart.
+            walk([].concat(props.children).slice(1), function (child) {
+              var kids = [].concat((child.props || {}).children || [])
+              if (child.type !== 'button' || kids.length !== 2) return
+              var name = kids[0] === null || kids[0] === undefined || kids[0].props === undefined ? null : [].concat(kids[0].props.children || []).join('')
+              if (typeof name !== 'string' || name.length === 0) return
+              out.labels.push(name)
+              out.cards.push((child.props || {}).disabled === true)
+            })
+          })
+          return out
+        }
+        r.settings.revealRow = readRow('chatReveal')
+        r.settings.caretRow = readRow('caretMotion')
+        r.settings.enterRow = readRow('messageEnter')
+        r.settings.statusRow = readRow('statusMotion')
+        // Both rows of cards hang off a switch above them, so each is read again
+        // with that switch off: the row greys out and its cards refuse input,
+        // which is how the page says the samples below are not what runs.
+        window.__pushForm({ chatSend: false, chatWait: false })
+        await sleep(120)
+        r.settings.enterRowOff = readRow('messageEnter')
+        r.settings.statusRowOff = readRow('statusMotion')
+        window.__pushForm({ chatSend: true, chatWait: true })
+        await sleep(120)
         // The caret row's preview cards: one line is typed out in both cards,
         // character by character, with the caret standing where the last typed
         // character ends — lit for the whole time the line is being typed and
@@ -356,6 +416,47 @@
         }
         r.settings.revealPreview = { fade: readPiece(fadePiece), waiting: readPiece(waitingPiece), plain: readPiece(plainPiece) }
         revealHost.remove()
+        // The sound level row draws its own three picks and sounds each one as it
+        // is pressed (features/sound-cues/sound-cues.settings.ts), so the row is
+        // read off the plain tree, pressed through the handlers the tree carries,
+        // and the asks that reach the route are read back. Off is a level with no
+        // gain, so it is the one press that stays silent; the second press of a
+        // level already in force is the reader asking to hear it again, so it
+        // sounds too.
+        var readLevels = function () {
+          var out = { label: null, buttons: [], press: [] }
+          walk(renderSettingsTab('general'), function (node) {
+            var props = node.props || {}
+            if (props.key !== 'soundCues') return
+            walk(props.children, function (child) {
+              var childProps = child.props || {}
+              if (childProps.role === 'group' && typeof childProps['aria-label'] === 'string') out.label = childProps['aria-label']
+              if (childProps['aria-pressed'] === undefined) return
+              out.buttons.push({
+                label: [].concat(childProps.children || []).join(''),
+                pressed: childProps['aria-pressed'],
+                disabled: childProps.disabled === true,
+              })
+              out.press.push(childProps.onClick)
+            })
+          })
+          return out
+        }
+        window.__soundAsks = []
+        var levels = readLevels()
+        r.settings.soundRow = { label: levels.label, buttons: levels.buttons }
+        // Off first, then the two levels, then the level just chosen again: the
+        // three asks that come back are the two levels and the repeat.
+        var presses = [0, 1, 2, 1]
+        for (var li = 0; li < presses.length; li++) levels.press[presses[li]]()
+        await probe.until(function () { return (window.__soundAsks || []).length },
+          function (counts) { return counts[counts.length - 1] >= 3 },
+          'the level row to sound the three picks that carry a gain')
+        await probe.settle()
+        r.settings.soundAsks = window.__soundAsks.slice()
+        r.settings.soundRowAfter = readLevels().buttons
+        window.__pushForm({ soundCues: 'off' })
+        await sleep(120)
         // The colour cards: all three are buttons, the card the page paints is
         // pressed, and a picked card hands the colours back through its reset.
         // The brand mark is read beside the card, because a picked card paints

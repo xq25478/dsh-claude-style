@@ -8,7 +8,33 @@
  * host can play, and every POST is recorded. No process is started, so the
  * spec hears no system sound.
  */
-import { installHostServiceOverride } from '../../fixtures/host-services.mjs'
+
+/**
+ * The stand-in's context with named services replaced: `get` answers from the
+ * table first, then from the context the page booted with, and `inject` answers
+ * the same way in the shape the runner's effect scoping expects.
+ */
+async function installHostServiceOverride(page) {
+  await page.evaluate(() => {
+    window.__overrideHostServices = (services) => {
+      const originalGet = window.__ctxOriginalGet ?? window.__ctx.get.bind(window.__ctx)
+      window.__ctxOriginalGet = originalGet
+      window.__ctx.get = (name) => (Object.hasOwn(services, name) ? services[name] : originalGet(name))
+      window.__ctx.inject = (_dependencies, callback) => {
+        const disposers = []
+        callback({
+          get: window.__ctx.get,
+          effect: (effect) => {
+            const dispose = effect()
+            if (typeof dispose === 'function') disposers.push(dispose)
+            return dispose
+          },
+        })
+        return { dispose: () => { for (const dispose of disposers.splice(0).reverse()) dispose() } }
+      }
+    }
+  })
+}
 
 export async function setup(t, { status, list }) {
   const posts = []

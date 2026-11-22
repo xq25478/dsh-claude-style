@@ -547,17 +547,6 @@ export function hostConversation(lookup: HostServiceLookup | null | undefined): 
   return conversation ?? null
 }
 
-/**
- * Stop the turn this lookup's session has in flight: the host's own stop, the
- * action its double-Esc command reaches. A turn that already ended takes it as
- * a no-op, so a press that lands after the answer does not fail.
- */
-export async function stopConversationTurn(lookup: HostServiceLookup): Promise<void> {
-  const conversation = hostConversation(lookup)
-  const cancel = conversation?.cancel
-  if (typeof cancel !== 'function') throw new Error('engine: the host conversation service offers no stop')
-  await cancel.call(conversation)
-}
 
 /** The reader's own keyboard shortcuts. */
 export function hostShortcuts(lookup: HostServiceLookup | null | undefined): HostShortcutsService | null {

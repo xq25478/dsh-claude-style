@@ -150,7 +150,6 @@ export const HOST_DOM: HostDomEntry[] = [
   { id: 'turn.rail-inset', value: String(dom.TURN_RAIL_INSET), probe: { state: 'any', kind: 'none' }, use: 'the rail\u2019s inset at each end, read by the same geometry check as turn.rail-pitch' },
   { id: 'conversation.session', value: dom.CONVERSATION_SESSION_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'the shown conversation column' },
   { id: 'conversation.session-attribute', value: dom.CONVERSATION_SESSION_ATTRIBUTE, probe: { state: 'conversation', kind: 'attribute' }, use: 'the session id the column carries' },
-  { id: 'conversation.session-ancestor', value: dom.CONVERSATION_SESSION_ANCESTOR_SELECTOR, probe: { state: 'conversation', kind: 'selector' }, use: 'the session id as an ancestor match, so a control inside a docked card reads its own session instead of the shown one' },
   { id: 'conversation.view-storage', value: dom.CONVERSATION_VIEW_STORAGE_PREFIX, probe: { state: 'any', kind: 'none' }, use: 'the per-session local storage key prefix whose view field the host writes synchronously before the selected view commits' },
   { id: 'conversation.view-trajectory', value: dom.CONVERSATION_VIEW_TRAJECTORY, probe: { state: 'any', kind: 'none' }, use: 'the trajectory view id, where the composer stands down' },
   { id: 'conversation.view-context', value: dom.CONVERSATION_VIEW_CONTEXT, probe: { state: 'any', kind: 'none' }, use: 'the context view id reported by the supported host, where the composer stands down' },

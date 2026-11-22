@@ -243,8 +243,6 @@ export const FOLD_SKIPPED_CONTROL_SELECTOR = '[data-turn-process], [data-turn-tr
 /** The shown conversation column, and the session id it carries. */
 export const CONVERSATION_SESSION_SELECTOR = '[data-phase="active"] [data-conversation-session]'
 export const CONVERSATION_SESSION_ATTRIBUTE = 'data-conversation-session'
-/** The session id as an ancestor match: a control inside a docked card reads the session it stands in, not the shown one (D3). */
-export const CONVERSATION_SESSION_ANCESTOR_SELECTOR = '[data-conversation-session]'
 /** The host's per-session store key prefix; its `view` field names the active view before React commits it. */
 export const CONVERSATION_VIEW_STORAGE_PREFIX = 'dsh.conversation.'
 export const CONVERSATION_VIEW_TRAJECTORY = 'trajectory'

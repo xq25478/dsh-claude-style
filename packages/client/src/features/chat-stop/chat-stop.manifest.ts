@@ -3,8 +3,8 @@ import type { FeatureManifest } from '../../core/feature'
 export default {
   id: 'chatStop',
   order: 268,
-  ungated: '停止按钮只在会话有回合在跑时出现在输入框右侧，补上宿主在草稿非空时让出的停止位（D76）',
-  contracts: ['conversation.session-ancestor'],
+  ungated: '已发送与停止站在最后一条用户消息下方，只在它的回合在跑时出现，补上宿主停止位在草稿非空时让出的空当（D76）',
+  contracts: ['chat.user-row', 'conversation.session-ancestor'],
   stylesheets: [{ file: 'chat-stop.css', rank: 131 }],
   cases: [],
 } satisfies FeatureManifest

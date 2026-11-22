@@ -1,56 +1,52 @@
 /**
- * The stop control stands in the composer's right seat only while the session's
- * turn runs, and one press ends that turn the way the host's own stop does: the
- * card offers one stop at a time, and while the host's stop holds the send seat
- * this one stands down.
+ * The sent message answers under itself: the last settled user row carries the
+ * skin's sent line while its turn runs, one press ends that turn the way the
+ * host's own stop does, and the line leaves when the turn is over. Only the last
+ * user row carries it — an earlier message is not the one the answer belongs to.
  *
  * @capability chat-stop
- * @features chat-stop, composer
- * @risk A stop stands beside a finished turn, two stops share the row, the press reaches no cancel, or the turn's end leaves the stop in the seat.
+ * @features chat-stop
+ * @risk The line stands under a finished turn, under an earlier message, two lines share the flow, the press reaches no cancel, or the turn's end leaves the line behind.
  */
 import { host, spec } from '../../fixtures/behaviour.mjs'
-import { SESSION, STOP, setup } from './host.mjs'
+import { LINE, SESSION, STOP, setup } from './host.mjs'
 
-const CARD = host('composer.card')
+const FLOW = host('chat.flow')
 
 export default spec({ page: 'model-meter' }, ({ test }) => {
-  test('a running turn offers one stop, and the press ends it', async t => {
+  test('a running turn answers the last sent message, and the press ends it', async t => {
     const host = await setup(t, { running: true })
-    t.expectThat.visible(await t.read.box(STOP), 'the running turn offers the stop')
+    t.expectThat.visible(await t.read.box(LINE), 'the running turn answers on a sent line')
+    t.expectThat.visible(await t.read.box(STOP), 'the line carries the stop')
 
     await t.page.click(STOP)
     await t.settle()
     t.expectThat.equal(await host.calls(), [SESSION], 'the press reaches the session’s own cancel')
-    t.expectThat.absent(await t.read.box(STOP), 'the ended turn takes the stop back out of the row')
+    t.expectThat.absent(await t.read.box(LINE), 'the ended turn takes the line away')
   })
 
-  test('a turn that is not running offers no stop', async t => {
+  test('a turn that is not running answers on no line', async t => {
     const host = await setup(t, { running: false })
-    t.expectThat.absent(await t.read.box(STOP), 'an idle session has nothing to stop')
+    t.expectThat.absent(await t.read.box(LINE), 'an idle session answers nothing')
 
     await host.setRunning({})
     await t.settle()
-    t.expectThat.visible(await t.read.box(STOP), 'the turn starting brings the stop into the seat')
+    t.expectThat.visible(await t.read.box(LINE), 'the turn starting brings the line back')
   })
 
-  test('the host’s own stop keeps the seat, and this one stands down', async t => {
+  test('the line stands under the last sent message, not under an earlier one', async t => {
     const host = await setup(t, { running: true })
-    t.expectThat.visible(await t.read.box(STOP), 'the reader has a stop while the draft leaves the host none')
-
-    await host.markHostStop(true)
-    await t.settle()
-    t.expectThat.absent(await t.read.box(STOP), 'the host’s stop in the send seat is the only stop on screen')
-
-    await host.markHostStop(false)
-    await t.settle()
-    t.expectThat.visible(await t.read.box(STOP), 'the seat comes back when the draft fills again')
+    t.expectThat.equal(await host.rows(), [
+      { key: 'first', line: false },
+      { key: 'second', line: true },
+    ], 'the last settled user row is the one the answer belongs to')
   })
 
-  test('the stop stands in the row beside the model seat, not over the card', async t => {
+  test('the line stands under the message, inside the flow', async t => {
     await setup(t, { running: true })
-    const seat = await t.read.box(STOP)
-    const card = await t.read.box(CARD)
-    t.expectThat.visible(seat, 'the seat draws the control')
-    t.expectThat.boxWithin(seat, card, 'the stop stands inside the composer card')
+    const line = await t.read.box(LINE)
+    const flow = await t.read.box(FLOW)
+    t.expectThat.visible(line, 'the line draws')
+    t.expectThat.boxWithin(line, flow, 'the line stands inside the chat column')
   })
 })

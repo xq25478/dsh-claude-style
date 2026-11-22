@@ -1,40 +1,46 @@
-/* One press ends the turn in flight (features/chat-stop/): the host keeps its
-   own stop in the send seat only while the draft is empty, so a turn sent with
-   text in the box has no stop to press. This one stands beside the model
-   picker in the send button's own shape, so the row reads as one control that
-   changes what it does. */
+/* The sent message's own line (features/chat-stop/): 「已发送」 under the last
+   user message, and while its turn runs, the stop that ends the answer. Claude
+   Code Desktop answers a sent message there rather than in the composer, and a
+   reader who wants to interrupt looks at the message they sent. */
+
+body[data-dsh-claude-style] .dsh-claude-sent-line {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+body[data-dsh-claude-style] .dsh-claude-sent-word {
+  letter-spacing: 0.01em;
+}
 
 body[data-dsh-claude-style] .dsh-claude-stop {
-  display: none;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: none;
+  gap: 4px;
+  height: 22px;
+  padding: 0 9px 0 7px;
+  border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 9999px;
-  background: var(--dsw-alias-button-primary-fill);
-  color: var(--dsw-alias-label-primary-foreground, #faf9f5);
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 1;
   cursor: pointer;
   transition:
     background var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard),
-    opacity var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard);
+    color var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard),
+    border-color var(--dsh-claude-duration-feedback) var(--dsh-claude-ease-standard);
 }
 
-/* The seat's own state: the control shows exactly while the session runs, and
-   stands out of the row the moment the turn ends (chat-stop.ts). */
-body[data-dsh-claude-style] .dsh-claude-stop:not(.is-out) {
-  display: inline-flex;
-}
-
-/* One stop on screen: while the host's own stop stands in the send seat, this
-   one stands down (features/composer marks the card). */
-body[data-dsh-claude-style] [data-dsh-claude-host-stop] .dsh-claude-stop {
-  display: none;
-}
-
-body[data-dsh-claude-style] .dsh-claude-stop:not(.is-out):hover {
-  background: var(--dsw-alias-button-primary-hover);
+body[data-dsh-claude-style] .dsh-claude-stop:hover {
+  background: var(--dsw-alias-interactive-bg-hover-solid);
+  color: var(--dsw-alias-label-primary);
+  border-color: var(--dsw-alias-border-l3);
 }
 
 body[data-dsh-claude-style] .dsh-claude-stop:focus-visible {
@@ -43,7 +49,7 @@ body[data-dsh-claude-style] .dsh-claude-stop:focus-visible {
 }
 
 body[data-dsh-claude-style] .dsh-claude-stop:active {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
 body[data-dsh-claude-style] .dsh-claude-stop.is-stopping {
@@ -52,12 +58,14 @@ body[data-dsh-claude-style] .dsh-claude-stop.is-stopping {
 }
 
 body[data-dsh-claude-style] .dsh-claude-stop.is-failed {
+  border-color: var(--dsw-alias-border-l3);
   background: var(--dsw-alias-bg-layer-3);
   color: var(--dsw-alias-label-primary);
 }
 
 body[data-dsh-claude-style] .dsh-claude-stop > svg {
   display: block;
+  flex: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

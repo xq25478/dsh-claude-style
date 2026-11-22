@@ -205,7 +205,6 @@ export const COMPOSER_ATTR = 'data-dsh-claude-composer-active'
 /** Present while the composer restyle applies and a conversation tab other than the chat is up: the composer is chat-view-only, so the stylesheet drops the whole bottom area (features/composer/composer.ts). */
 export const COMPOSER_HIDDEN_ATTR = 'data-dsh-claude-composer-hidden'
 /** On one composer card while the host's own stop button is the one it stands in that seat: the host puts its stop in the send button's place whenever the draft is empty, and the skin's own stop stands down under this mark so one turn never offers two (features/composer/composer.ts, features/chat-stop/). */
-export const HOST_STOP_ATTR = 'data-dsh-claude-host-stop'
 /** Present on the conversation root while a message column is mounted on the page. The host pins the composer seat and sizes the view area from `data-phase="active"` alone, so a phase mark landing on `hero` or `settling` with the transcript already mounted drops both.
  * The composer would then stand in the middle of rows that paint on below it, so the stylesheet keys the pin, the bar and the view area's contract on this mark as well (features/composer/inline.css). */
 export const TRANSCRIPT_ATTR = 'data-dsh-claude-transcript'
